@@ -1,5 +1,6 @@
 import express from'express'
 import User from '../model/User.js'
+import bcrypt from 'bcrypt'
 
 const router=express.Router();
 
@@ -10,7 +11,11 @@ router.post("/create", async (req,res) => {
         let existingUser = await User.findOne({ email});
         if (existingUser) return res.status(400).json({message: "user already exists"});
 
-        const new_user= new User ({name , email , password,role});
+         // Hasher le mot de passe avant de le sauvegarder
+         const saltRounds = 10;
+         const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const new_user= new User ({name , email , password:hashedPassword ,role});
         await new_user.save()
 
         res.status(201).json(new_user);
