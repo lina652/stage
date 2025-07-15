@@ -18,6 +18,15 @@ const Projects = () => {
     try {
       const res = await axios.get('http://localhost:5000/projects/get');
       setProjects(res.data);
+
+      if (res.data.length > 0) {
+        const maxId = Math.max(...res.data.map(p => {
+          const idNum = parseInt(p.id.split('-')[0]);
+          return isNaN(idNum) ? 0 : idNum;
+        }));
+        setLastId(maxId);}
+
+
     } catch (err) {
       console.error('Error fetching projects:', err);
     }
@@ -32,8 +41,9 @@ const Projects = () => {
   const handleCreate = () => {
     const newClientId = generateClientId(lastId);
     setLastId(lastId + 1);
-    setFormData({ name: "", id: newClientId , client: "", user: "" });
+    setFormData({ name: "", id: newClientId , client: "", user:[] });
     setShowForm(true);
+    console.log("test")
   };
 
   const handleInputChange = (e) => {
@@ -61,6 +71,7 @@ const Projects = () => {
       fetchProjects();
     } catch (err) {
       console.error('submit error:', err);
+      alert('Error creating project. Please try again.');
     }
   };
 
@@ -122,16 +133,21 @@ const Projects = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">User</label>
-                  <input
-                    type="text"
-                    name="user"
-                    value={formData.user}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full"
-                    placeholder="Enter user name"
-                    required
-                  />
+                <label className="block text-sm font-medium mb-2">User</label>
+               <select
+  name="user"
+  value={formData.user || ""} // Gère le cas où formData.user est undefined
+  onChange={handleInputChange}
+  className="select select-bordered w-full"
+  required
+>
+  <option value="" disabled>Select a user</option>
+  <option value="1">John Doe</option>
+  <option value="2">Jane Smith</option>
+  <option value="3">Mohammed Ali</option>
+  <option value="4">Sarah Johnson</option>
+  <option value="5">David Wilson</option>
+</select>
                 </div>
 
                 <div className="flex justify-end space-x-2">
@@ -164,8 +180,8 @@ const Projects = () => {
                 </h2>
                 <p className="text-gray-">🆔 ID: {project.id}</p> 
                 <p className="text-gray">👤 Client: {project.client}</p>
-                <p className="text-gray">👤 Members: {project.user} members</p>
-                <p className="text-gray">📋 Tasks: {project.task} tasks</p>
+                <p className="text-gray">👤 Members: {project.user?.length || 0} members</p>
+                <p className="text-gray">📋 Tasks: {project.task?.length || 0} tasks</p>
                 <Link
                   to={`/tasksmanagement/${project._id}`}
                   className="btn btn-sm btn-info"

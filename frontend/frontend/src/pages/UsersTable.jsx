@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar';
 const UsersTable = () => {
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password:'', role:'', id: null  });
+  const [formData, setFormData] = useState({ name: '', email: '', password:'', role:''  });
 
 
   useEffect(() => {
@@ -31,12 +31,12 @@ const UsersTable = () => {
   };
 
   const handleEdit = (user) => {
-    setFormData({ name: user.name, email: user.email, id: user._id ,role: user.role , password:user.password  });
+    setFormData({ name: user.name, email: user.email, role: user.role , password:user.password  });
     setShowForm(true);
   };
 
   const handleCreate = () => {
-    setFormData({ name: '', email: '', id: null  ,role: '' , password:''  });
+    setFormData({ name: '', email: ''  ,role: '' , password:''  });
     setShowForm(true);
   };
 
@@ -122,14 +122,7 @@ const UsersTable = () => {
                 {formData.id ? 'Edit User' : 'Create New User'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                  type="text"
-                  placeholder="ID"
-                  className="input input-bordered w-full"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-                  required
-                />
+              
               <input
                   type="text"
                   placeholder="Name"

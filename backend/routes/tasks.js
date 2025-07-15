@@ -1,5 +1,8 @@
 import express from "express";
 import Task from "../model/Task.js";
+import Project from "../model/Project.js";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
 
@@ -7,34 +10,43 @@ router.post("/create/:projectId", async (req, res) => {
   try {
     const { projectId } = req.params;
     const { title, description, type, status, dueDate, user } = req.body;
-    let existingTask = await Task.findOne({ title, description ,project: projectId});
+    let existingTask = await Task.findOne({
+      title,
+      description,
+      project: projectId,
+    });
     if (existingTask)
       return res.status(400).json({ message: "Task already exists" });
 
     const new_Task = new Task({
       title,
-      description:description || "",
+      description: description || "",
       type,
       status,
       dueDate,
       user,
-      project: projectId
+      project: new ObjectId(projectId), // Conversion ici
     });
-    await Project.findByIdAndUpdate(
-      projectId,
-      { $push: { tasks: new_Task._id } });
+
     await new_Task.save();
+    console.log(projectId);
+
+    await Project.findByIdAndUpdate(projectId, {
+      $push: { tasks: new_Task._id },
+    });
     res.status(201).json(new_Task);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.get("/read", async (req, res) => {
+router.get("/project/:projectId", async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const { projectId } = req.params;
+    const tasks = await Task.find({ project: projectId }).populate("project");
     res.status(200).json(tasks);
   } catch (err) {
+    console.error("Error fetching project tasks:", err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -64,6 +76,10 @@ router.delete("/:id", async (req, res) => {
     if (!deletedTask) {
       return res.status(404).json({ message: "Task not found" });
     }
+    // Remove task from project
+    await Project.findByIdAndUpdate(deletedTask.project, {
+      $pull: { tasks: id },
+    });
 
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (err) {

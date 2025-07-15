@@ -29,11 +29,17 @@ const TaskSchema=new mongoose.Schema({
     },
     user:{
         type: mongoose.Schema.Types.ObjectId,
-        ref :"User"},
+        ref :"User",
+        required:true,},
 
+    project: { // Added missing project field
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Project",
+    required: true
+    }   
    
 },
-    {timeStamps:true}
+    {timestamps:true}
 );
 const Task =mongoose.model("Task", TaskSchema);
 export default Task;

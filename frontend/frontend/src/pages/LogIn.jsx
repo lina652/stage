@@ -13,9 +13,10 @@ function LogIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/auth/login', formData); 
+      const response = await axios.post('http://localhost:5000/auth/login', formData,{
+        withCredentials: true 
+      }); 
       setMessage(response.data.message);
-
       const userRole = response.data.role;
 
       if (userRole === 'user') {

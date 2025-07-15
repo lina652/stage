@@ -9,11 +9,16 @@ const router = express.Router();
 router.post("/login" , async(req,res) =>{
     try{
         const{email, password}=req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
         const user = await User.findOne({email});
         if (!user ) return  res.status(400).json({message: "Invalid credentials"});
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({message: "Invlid credentials"});
+        if (!isMatch) return res.status(400).json({message: "Invalid credentials"});
 
         const token = jwt.sign({ is: user._id}, process.env.JWT_SECRET, {  expiresIn: "1h"});
 
@@ -27,6 +32,17 @@ router.post("/login" , async(req,res) =>{
         res.status(500).json({message: error.message});
     }
 });
+
+router.get("/get", async (req,res) =>{
+    try {
+        
+        const users = await User.find();
+        res.status(200).json(users);
+      } catch (err) {
+        console.error("Error fetching users tasks:", err);
+        res.status(500).json({ message: err.message });
+      }
+})
 
 
 
