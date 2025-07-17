@@ -3,13 +3,19 @@ import Task from "../model/Task.js";
 import Project from "../model/Project.js";
 import mongoose from "mongoose";
 const { ObjectId } = mongoose.Types;
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
 router.post("/create/:projectId", async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { title, description, type, status, dueDate, user } = req.body;
+    const { title, description, type, status, dueDate, users } = req.body;
+    if (!Array.isArray(users) || users.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one user must be assigned" });
+    }
     let existingTask = await Task.findOne({
       title,
       description,
@@ -24,7 +30,7 @@ router.post("/create/:projectId", async (req, res) => {
       type,
       status,
       dueDate,
-      user,
+      users,
       project: new ObjectId(projectId), // Conversion ici
     });
 
@@ -34,6 +40,7 @@ router.post("/create/:projectId", async (req, res) => {
     await Project.findByIdAndUpdate(projectId, {
       $push: { tasks: new_Task._id },
     });
+   
     res.status(201).json(new_Task);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -43,7 +50,9 @@ router.post("/create/:projectId", async (req, res) => {
 router.get("/project/:projectId", async (req, res) => {
   try {
     const { projectId } = req.params;
-    const tasks = await Task.find({ project: projectId }).populate("project");
+    const tasks = await Task.find({ project: projectId })
+      .populate("project")
+      .populate("users");
     res.status(200).json(tasks);
   } catch (err) {
     console.error("Error fetching project tasks:", err);
@@ -53,10 +62,10 @@ router.get("/project/:projectId", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const { title, description, type, status, dueDate, user } = req.body;
+    const { title, description, type, status, dueDate, users } = req.body;
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
-      { title, description, type, status, dueDate, user },
+      { title, description, type, status, dueDate, users },
       { new: true }
     );
     if (!updatedTask)
@@ -69,6 +78,7 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
+    
     const { id } = req.params;
 
     const deletedTask = await Task.findByIdAndDelete(id);
@@ -86,11 +96,37 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// Backend - Express
 
-// In tasks.js (backend)
-router.get("/project/:projectId", async (req, res) => {
-  const tasks = await Task.find({ project: req.params.projectId });
-  res.json(tasks);
+router.get("/auth/me", (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    
+    console.log(token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ id: decoded.id, name: decoded.name });
+  } catch (err) {
+    res.status(403).json({ message: "Invalid token" });
+  }
+});
+
+router.get("/user/mytask", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+    console.log(token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const tasks = await Task.find({ users: decoded.id }).populate('project');
+    res.json(tasks);
+  } catch {
+    console.error("Error fetching user tasks:", err);
+    res.status(500).json({ message: err.message });
+  }
 });
 
 export default router;

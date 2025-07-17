@@ -27,10 +27,10 @@ const TaskSchema=new mongoose.Schema({
     dueDate:{
         type:Date
     },
-    user:{
+    users:[{
         type: mongoose.Schema.Types.ObjectId,
         ref :"User",
-        required:true,},
+        required:true}],
 
     project: { // Added missing project field
     type: mongoose.Schema.Types.ObjectId,

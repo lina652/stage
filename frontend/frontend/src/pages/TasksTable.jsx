@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-
+import { useAuth } from '../context/AuthContext';
 const TYPE_OPTIONS = [
   'Story Image',
   'Animated Story',
@@ -25,6 +25,7 @@ const TasksTable = () => {
   const { projectId } = useParams();
   const [project, setProject] = useState({});
   const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -32,11 +33,13 @@ const TasksTable = () => {
     type: '',
     status: '',
     dueDate: '',
-    user: '',
+    users: [],
   });
+  const { user , loading } = useAuth();
 
   useEffect(() => {
     fetchTasks();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -56,8 +59,19 @@ const TasksTable = () => {
 
   const fetchTasks = async () => {
     const res = await axios.get(`http://localhost:5000/tasks/project/${projectId}`);
+
     setTasks(res.data);
   };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/users/read/${projectId}`);
+      setUsers(res.data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setUsers([]);
+    }
+  }
 
   const handleCreate = () => {
     setFormData({
@@ -65,13 +79,17 @@ const TasksTable = () => {
       type: '',
       status: '',
       dueDate: '',
-      user: '',
+      users: [],
     });
     setShowForm(true);
   };
 
   const handleEdit = (task) => {
-    setFormData({ ...task });
+    setFormData({
+      ...task,
+      users: task.users?.map(u => (typeof u === 'object' ? u._id : u)) || [],
+      dueDate: task.dueDate ? task.dueDate.split('T')[0] : ''
+    });
     setShowForm(true);
   };
 
@@ -110,9 +128,19 @@ const TasksTable = () => {
     }
   };
 
+  const getUserNames = (users) => {
+    if (Array.isArray(users) && users.length > 0) {
+      return users
+        .map(user => (typeof user === 'object' ? user.name || user.email : users.find(u => u._id === user)?.name))
+        .filter(Boolean)
+        .join(", ");
+    }
+    return "No users assigned";
+  };
+  
   return (
     <div className="flex min-h-screen">
-      <Sidebar role="admin" />
+      <Sidebar role="user" />
       <div className="flex-1 p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">📋 Task Management</h1>
@@ -150,14 +178,14 @@ const TasksTable = () => {
                   <td>{task.status}</td>
                   <td>{task.dueDate?.split('T')[0]}</td>
                   <td>{new Date(task.createdAt).toLocaleDateString()}</td>
-                  <td>{task.user}</td>
+                  <td>{getUserNames(task.users)}</td>
                   <td className="flex gap-2">
-                    <button className="btn btn-sm btn-info" onClick={() => handleEdit(task)}>
+                  {user.role === 'admin' && (<button className="btn btn-sm btn-info" onClick={() => handleEdit(task)}>
                       ✏️ Edit
-                    </button>
-                    <button className="btn btn-sm btn-error" onClick={() => handleDelete(task._id)}>
+                    </button>)}
+                    {user.role === 'admin' && ( <button className="btn btn-sm btn-error" onClick={() => handleDelete(task._id)}>
                       🗑️ Delete
-                    </button>
+                    </button>)}
                   </td>
                 </tr>
               ))
@@ -224,13 +252,37 @@ const TasksTable = () => {
                   onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                 />
 
-                <input
-                  type="text"
-                  placeholder="Assigned User"
-                  className="input input-bordered w-full"
-                  value={formData.user}
-                  onChange={(e) => setFormData({ ...formData, user: e.target.value })}
-                />
+<div className=" form-control w-full">
+  <label className="label">
+    <span className="label-text font-medium">Assign Users</span>
+  </label>
+  <div className="input input-bordered w-full  text-white max-h-60 h-48 p-3 overflow-y-auto">
+    {users.map((user) => (
+      <label
+        key={user._id}
+        className="flex items-center gap-2 py-1 px-2  cursor-pointer text-sm"
+      >
+        <input
+          type="checkbox"
+          className="checkbox checkbox-sm"
+          value={user._id}
+          checked={formData.users.includes(user._id)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const updated = e.target.checked
+              ? [...formData.users, value]
+              : formData.users.filter((id) => id !== value);
+            setFormData({ ...formData, users: updated });
+          }}
+        />
+        {user.name} <span className="text-gray-500 text-xs">({user.email})</span>
+      </label>
+    ))}
+  </div>
+</div>
+
+
+
 
                 <div className="flex justify-end gap-2">
                   <button type="button" onClick={() => setShowForm(false)} className="btn">
@@ -250,3 +302,4 @@ const TasksTable = () => {
 };
 
 export default TasksTable;
+

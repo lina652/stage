@@ -22,13 +22,26 @@ const UsersTable = () => {
   };
 
   const toggleActivation = async (id, currentState) => {
+    const action = currentState ? 'inactivate' : 'reactivate';
+    const confirmMsg = `Are you sure you want to ${action} this user?`;
+  
+    if (!window.confirm(confirmMsg)) return;
+  
     try {
-      await axios.put(`http://localhost:5000/users/${id}/activate`, { activate: !currentState }, { withCredentials: true });
+      await axios.put(
+        `http://localhost:5000/users/${id}/activate`,
+        { activate: !currentState },
+        { withCredentials: true }
+      );
+  
+      alert(`User successfully ${!currentState ? 'reactivated' : 'deactivated'}.`);
       fetchUsers();
     } catch (err) {
       console.error('Activation error:', err);
+      alert(`Failed to ${action} user. Please try again.`);
     }
   };
+  
 
   const handleEdit = (user) => {
     setFormData({ name: user.name, email: user.email, role: user.role , password:user.password  });
@@ -67,7 +80,7 @@ const UsersTable = () => {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar role="admin" />
+      <Sidebar role="user" />
       <div className="flex-1 p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">User Management</h1>

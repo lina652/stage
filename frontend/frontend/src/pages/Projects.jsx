@@ -2,21 +2,30 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import {Link} from 'react-router';
+import { useAuth } from '../context/AuthContext';
 
 
 const Projects = () => {
+  
   const [projects, setProjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: "", client: "", user: "" });
+  const [formData, setFormData] = useState({ name: "", client: "", users: [] });
   const [lastId, setLastId] = useState(0);
+  const [users, setUsers] = useState([]);
+  const { user , loading } = useAuth();
+
+  if (loading) return <div className="p-10 text-xl">Loading...</div>;
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+    fetchUsers();
+  }, [user]);
 
   const fetchProjects = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/projects/get');
+      const res = await axios.get('http://localhost:5000/projects/get' , {
+        withCredentials: true, 
+      } );
       setProjects(res.data);
 
       if (res.data.length > 0) {
@@ -32,6 +41,17 @@ const Projects = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/users/read", {
+        withCredentials: true,
+      });
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
+  };
+
   const generateClientId = (lastId) => {
     const number = lastId + 1;
     const padded = number.toString().padStart(4, '0');
@@ -41,7 +61,7 @@ const Projects = () => {
   const handleCreate = () => {
     const newClientId = generateClientId(lastId);
     setLastId(lastId + 1);
-    setFormData({ name: "", id: newClientId , client: "", user:[] });
+    setFormData({ name: "", id: newClientId , client: "", users:[] });
     setShowForm(true);
     console.log("test")
   };
@@ -63,7 +83,7 @@ const Projects = () => {
           id: formData.id,
           name: formData.name,
           client: formData.client,
-          user: formData.user,
+          users: formData.users,
         },
         { withCredentials: true }
       );
@@ -80,7 +100,7 @@ const Projects = () => {
 
   const handleCancel = () => {
     setShowForm(false);
-    setFormData({ name: "", client: "", user: "" });
+    setFormData({ name: "", client: "", users: [] });
   };
 
 
@@ -88,16 +108,17 @@ const Projects = () => {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar role="admin" />
+      {user && <Sidebar />}
 
       <div className="flex-1 p-6">
         
-        <div className="flex justify-between items-center mb-4">
+         {user.role === 'admin' && (<div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Projects</h1>
           <button className="btn btn-primary" onClick={handleCreate}>
             ➕ Create Project
           </button>
         </div>
+        )}
 
         
         {showForm && (
@@ -132,23 +153,34 @@ const Projects = () => {
                   />
                 </div>
 
-                <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">User</label>
-               <select
-  name="user"
-  value={formData.user || ""} // Gère le cas où formData.user est undefined
-  onChange={handleInputChange}
-  className="select select-bordered w-full"
-  required
->
-  <option value="" disabled>Select a user</option>
-  <option value="1">John Doe</option>
-  <option value="2">Jane Smith</option>
-  <option value="3">Mohammed Ali</option>
-  <option value="4">Sarah Johnson</option>
-  <option value="5">David Wilson</option>
-</select>
-                </div>
+                <div className=" form-control w-full">
+  <label className="label">
+    <span className="label-text font-medium">Assign Users</span>
+  </label>
+  <div className="input input-bordered w-full  text-white max-h-60 h-48 p-3 overflow-y-auto">
+    {users.map((user) => (
+      <label
+        key={user._id}
+        className="flex items-center gap-2 py-1 px-2  cursor-pointer text-sm"
+      >
+        <input
+          type="checkbox"
+          className="checkbox checkbox-sm"
+          value={user._id}
+          checked={formData.users.includes(user._id)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const updated = e.target.checked
+              ? [...formData.users, value]
+              : formData.users.filter((id) => id !== value);
+            setFormData({ ...formData, users: updated });
+          }}
+        />
+        {user.name} <span className="text-gray-500 text-xs">({user.email})</span>
+      </label>
+    ))}
+  </div>
+</div>
 
                 <div className="flex justify-end space-x-2">
                   <button
@@ -180,8 +212,8 @@ const Projects = () => {
                 </h2>
                 <p className="text-gray-">🆔 ID: {project.id}</p> 
                 <p className="text-gray">👤 Client: {project.client}</p>
-                <p className="text-gray">👤 Members: {project.user?.length || 0} members</p>
-                <p className="text-gray">📋 Tasks: {project.task?.length || 0} tasks</p>
+                <p className="text-gray">👤 Members: {project.users?.length || 0} members</p>
+                <p className="text-gray">📋 Tasks: {project.tasks?.length || 0} tasks</p>
                 <Link
                   to={`/tasksmanagement/${project._id}`}
                   className="btn btn-sm btn-info"

@@ -7,21 +7,24 @@ const ProjectsTable = () => {
   const [projects, setProjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ 
+    
     name: '', 
     client: '', 
-    users: [], 
-    tasks: [] 
+    users: [] 
+    
   });
-  const [allUsers, setAllUsers] = useState([]);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     fetchProjects();
-    fetchAllUsers();
+    fetchUsers();
   }, []);
 
   const fetchProjects = async () => {
     try {
       const res = await axios.get('http://localhost:5000/projects/get', {
+        withCredentials: true,
+      }, {
         params: { populate: 'users,tasks' }
       });
       setProjects(res.data);
@@ -30,40 +33,49 @@ const ProjectsTable = () => {
     }
   };
 
-  const fetchAllUsers = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/users/read');
-      console.log(res.data)
-      setAllUsers(res.data);
+      const res = await axios.get("http://localhost:5000/users/read", {
+        withCredentials: true,
+      });
+      setUsers(res.data);
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error("Failed to fetch users:", err);
     }
-  };
+  }
 
   const handleEdit = (project) => {
     setFormData({
       _id: project._id,
       name: project.name,
       client: project.client,
-      users: [],
-      tasks: project.tasks || []
+      users: project.users?.map(u => u._id) || [],
+      
     });
     setShowForm(true);
   };
 
   const handleCreate = () => {
-    setFormData({ name: '', client: '', users: [], tasks: [] });
+    setFormData({ name: '', client: '', users: []});
     setShowForm(true);
   };
 
+  const generateClientId = (lastId) => {
+    const number = lastId + 1;
+    const padded = number.toString().padStart(4, '0');
+    return `${padded}-Client`;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const payload = {
-        ...formData,
+        id : generateClientId(projects.length),
+        name: formData.name,
+        client: formData.client,
         users: Array.isArray(formData.users) ? formData.users : [],
-        tasks: Array.isArray(formData.tasks) ? formData.tasks : []
+        
       };
+      console.log('Submitting payload:', payload);
 
       if (formData._id) {
         await axios.put(`http://localhost:5000/projects/${formData._id}`, payload, { 
@@ -75,6 +87,7 @@ const ProjectsTable = () => {
         });
       }
       setShowForm(false);
+      setFormData({ name: '', client: '', users: [] });
       fetchProjects();
     } catch (err) {
       console.error('Submit error:', err);
@@ -154,26 +167,35 @@ const ProjectsTable = () => {
                   required
                 />
                 
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Assign Users</span>
-                  </label>
-                  <select
-                    multiple
-                    className="select select-bordered h-auto min-h-[3rem]"
-                    value={formData.users}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, opt => opt.value);
-                      setFormData({...formData, users: selected});
-                    }}
-                  >
-                    {allUsers.map(user => (
-                      <option key={user._id} value={user._id}>
-                        {user.name} ({user.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <div className=" form-control w-full">
+  <label className="label">
+    <span className="label-text font-medium">Assign Users</span>
+  </label>
+  <div className="input input-bordered w-full  text-white max-h-60 h-48 p-3 overflow-y-auto">
+    {users.map((user) => (
+      <label
+        key={user._id}
+        className="flex items-center gap-2 py-1 px-2  cursor-pointer text-sm"
+      >
+        <input
+          type="checkbox"
+          className="checkbox checkbox-sm"
+          value={user._id}
+          checked={formData.users.includes(user._id)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const updated = e.target.checked
+              ? [...formData.users, value]
+              : formData.users.filter((id) => id !== value);
+            setFormData({ ...formData, users: updated });
+          }}
+        />
+        {user.name} <span className="text-gray-500 text-xs">({user.email})</span>
+      </label>
+    ))}
+  </div>
+</div>
+
 
                 <div className="flex justify-end gap-2">
                   <button 
