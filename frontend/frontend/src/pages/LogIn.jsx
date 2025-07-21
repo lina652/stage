@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router'; 
+import { useAuth } from '../context/AuthContext';
 
 function LogIn() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
+  const {setUser}=useAuth()
   const navigate = useNavigate();
 
   const handleChange = (e) =>
@@ -18,12 +20,12 @@ function LogIn() {
       }); 
       setMessage(response.data.message);
       const userRole = response.data.role;
-
+      setUser(response.data)
       if (userRole === 'user') {
         navigate('/userhome');
       } 
       else {
-        navigate('/adminhome');
+        navigate('/projectsmanagement');
       }
 
     }

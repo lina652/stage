@@ -112,7 +112,7 @@ const Projects = () => {
 
       <div className="flex-1 p-6">
         
-         {user.role === 'admin' && (<div className="flex justify-between items-center mb-4">
+         {user?.role == 'admin' && (<div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Projects</h1>
           <button className="btn btn-primary" onClick={handleCreate}>
             ➕ Create Project

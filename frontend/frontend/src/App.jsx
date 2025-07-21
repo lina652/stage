@@ -10,24 +10,35 @@ import Tasks from './pages/Tasks.jsx'
 import PrivateRoute from './routes/PrivateRoute'
 import {BrowserRouter , Routes ,Route } from 'react-router'
 
+import AdminRoute from './routes/AdminRoute';
+import UserRoute from './routes/UserRoute';
+
 function App() {
   
   return (
     <div data-theme="dracula">
+      
       <BrowserRouter>
       <Routes>
       <Route path="/" element={<LogIn />} />
       <Route path="/login" element={<LogIn />} />
-
-      
         <Route element={<PrivateRoute />}>
+        
+        <Route element={<AdminRoute />}>
+          <Route path="/adminhome" element={<AdminHome />} />
+          <Route path="/usersmanagement" element={<UsersTable />} />
+          <Route path="/projectsmanagement" element={<ProjectsTable />} />
+        </Route>
+
+
+        <Route element={<UserRoute />}> 
         <Route path="/userhome" element={<UserHome />} />
-        <Route path="/adminhome" element={<AdminHome />} />
-        <Route path="/usersmanagement" element={<UsersTable />} />
-        <Route path="/projectsmanagement" element={<ProjectsTable />} />
-        <Route path="/projects" element={<Projects />} />
+        </Route>
+        
         <Route path="/tasksmanagement/:projectId" element={<TasksTable />} />
+        <Route path="/projects" element={<Projects />} />
         <Route path="/tasks" element={<Tasks />} />
+
       </Route>
     </Routes>
       </BrowserRouter>

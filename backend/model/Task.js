@@ -20,7 +20,7 @@ const TaskSchema=new mongoose.Schema({
         'In Review',
         'Approved',
         'Rejected',
-        'Published'],
+        'Completed'],
         default:'To Do',
         required:true
     },
@@ -36,7 +36,19 @@ const TaskSchema=new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Project",
     required: true
-    }   
+    },
+    isRecurring: { type: Boolean, default: false },
+recurrence: {
+  frequency: { type: String, enum: ['daily', 'weekly', 'monthly'], default: null },
+  interval: { type: Number, default: 1 },
+  endDate: { type: Date },
+},
+comments: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    text: String,
+    createdAt: { type: Date, default: Date.now }
+  }],
+completedDates: [Date]
    
 },
     {timestamps:true}

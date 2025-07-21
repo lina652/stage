@@ -6,7 +6,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);      // Stocke les infos utilisateur, y compris le rôle
-  const [loading, setLoading] = useState(true); // Pour éviter un affichage prématuré
+  const [loading, setLoading] = useState(false); // Pour éviter un affichage prématuré
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -14,7 +14,8 @@ export const AuthProvider = ({ children }) => {
         const res = await axios.post('http://localhost:5000/auth/get', {}, {
           withCredentials: true,
         });
-        setUser({ name: res.data.name, role: res.data.role });
+        
+        setUser(res.data);
       } catch (err) {
         setUser(null); // Pas connecté ou erreur
       } finally {
