@@ -39,7 +39,7 @@ const TaskSchema=new mongoose.Schema({
     },
     isRecurring: { type: Boolean, default: false },
 recurrence: {
-  frequency: { type: String, enum: ['daily', 'weekly', 'monthly'], default: null },
+  frequency: { type: String, enum: ['daily', 'weekly', 'monthly' , null], default: null },
   interval: { type: Number, default: 1 },
   endDate: { type: Date },
 },

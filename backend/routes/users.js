@@ -12,6 +12,10 @@ router.post("/create", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
+    if (!email.endsWith('@gmail.com')) {
+      return res.status(400).json({ message: "Email must be a Gmail address (@gmail.com)" });
+    }
+
     let existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: "user already exists" });

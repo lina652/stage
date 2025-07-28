@@ -32,17 +32,41 @@ const Sidebar = () => {
         <li><Link to="/tasks">✅ My Tasks</Link></li>
       </ul>
 
-      {user?.role === 'admin' ? (
-        <details className="menu-dropdown">
-          <summary className="menu ml-4 px-1 pl-2 py-2 rounded-[0.50rem] dark:hover:bg-neutral">
-            🛠️ Administration
-          </summary>
-          <ul className="menu ml-6">
-            <li><Link to="/usersmanagement">👥 User Management</Link></li>
-            <li><Link to="/projectsmanagement">📋 Project Management</Link></li>
-          </ul>
-        </details>
-      ):null}
+      {user?.role === 'admin' && (
+  <details className="group menu-dropdown mt-4 rounded-lg bg-base-100 shadow-md">
+    <summary className="flex items-center justify-between cursor-pointer px-4 py-2 text-base  hover:bg-base-300 rounded-t-lg">
+      <span>🛠️ Administration</span>
+      <svg
+        className="w-4 h-4 ml-2 transform transition-transform duration-300 group-open:rotate-180"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </summary>
+    <ul className="menu px-4 py-2 space-y-2 bg-base-200 rounded-b-lg">
+      <li>
+        <Link
+          to="/usersmanagement"
+          className="block px-3 py-1.5 rounded hover:bg-primary hover:text-white transition"
+        >
+          👥 User Management
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/projectsmanagement"
+          className="block px-3 py-1.5 rounded hover:bg-primary hover:text-white transition"
+        >
+          📋 Project Management
+        </Link>
+      </li>
+    </ul>
+  </details>
+)}
+
 
       <ul className="menu space-y-2">
         <li className="mt-auto">
