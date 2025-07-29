@@ -1,0 +1,35 @@
+# Ignorer les dépendances Node.js
+node_modules/
+
+# Ignorer les fichiers d'environnement
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dossiers de build (si tu compiles avec TypeScript ou bundler)
+dist/
+build/
+
+# Dossiers de cache
+.cache/
+tmp/
+temp/
+
+# Systèmes d'exploitation
+.DS_Store
+Thumbs.db
+
+# Éditeurs / IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
