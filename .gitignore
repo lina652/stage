@@ -1,5 +1,5 @@
 # === Global ===
-
+/backend/node_modules
 # Node modules (frontend and backend)
 **/node_modules/
 
