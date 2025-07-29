@@ -1,0 +1,48 @@
+# === Global ===
+
+# Node modules (frontend and backend)
+**/node_modules/
+
+# Logs
+**/*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+**/package-lock.json
+**/yarn.lock
+.pnpm-debug.log
+
+# Environment files
+**/.env
+**/.env.local
+**/.env.*.local
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Build output
+dist/
+build/
+frontend/dist/
+backend/dist/
+
+# Coverage reports
+coverage/
+
+# Optional: Vite cache
+frontend/.vite/
+
+# Optional: Other caches
+**/.cache/
+**/.turbo/
+**/.next/

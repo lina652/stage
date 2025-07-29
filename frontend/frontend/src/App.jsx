@@ -7,11 +7,13 @@ import Projects from './pages/Projects'
 import ProjectsTable from './pages/ProjectsTable'
 import TasksTable from './pages/TasksTable'
 import Tasks from './pages/Tasks.jsx'
+import Password from './pages/Password';
 import PrivateRoute from './routes/PrivateRoute'
 import {BrowserRouter , Routes ,Route } from 'react-router'
 
 import AdminRoute from './routes/AdminRoute';
 import UserRoute from './routes/UserRoute';
+
 
 function App() {
   
@@ -22,6 +24,7 @@ function App() {
       <Routes>
       <Route path="/" element={<LogIn />} />
       <Route path="/login" element={<LogIn />} />
+      <Route path="/set-password/:id" element={<Password />} />
         <Route element={<PrivateRoute />}>
         
         <Route element={<AdminRoute />}>

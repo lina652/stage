@@ -115,9 +115,10 @@ router.put("/:id", async (req, res) => {
     task.status = req.body.status;
     task.dueDate = req.body.dueDate;
     task.users = req.body.users;
-    
+
     // Handle isRecurring field explicitly
-    const isRecurring = req.body.isRecurring === true || req.body.isRecurring === "true";
+    const isRecurring =
+      req.body.isRecurring === true || req.body.isRecurring === "true";
     task.isRecurring = isRecurring;
 
     // Handle recurrence field
@@ -125,24 +126,24 @@ router.put("/:id", async (req, res) => {
       task.recurrence = {
         frequency: req.body.recurrence.frequency,
         interval: parseInt(req.body.recurrence.interval, 10) || 1,
-        endDate: req.body.recurrence.endDate || null
+        endDate: req.body.recurrence.endDate || null,
       };
     } else {
       // Explicitly clear recurrence when not recurring
       task.recurrence = null;
       task.markModified("recurrence");
     }
-     
+
     console.log("Task before save:", {
       isRecurring: task.isRecurring,
-      recurrence: task.recurrence
+      recurrence: task.recurrence,
     });
 
     await task.save();
 
     console.log("Task after save:", {
       isRecurring: task.isRecurring,
-      recurrence: task.recurrence
+      recurrence: task.recurrence,
     });
 
     res.status(200).json({ message: "Task updated successfully", task });

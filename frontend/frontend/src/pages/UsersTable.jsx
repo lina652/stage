@@ -7,7 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 const UsersTable = () => {
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '' });
+  const [formData, setFormData] = useState({ name: '', email: '',  role: '' });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -74,13 +74,13 @@ const UsersTable = () => {
       name: user.name,
       email: user.email,
       role: user.role,
-      password: user.password,
+      
     });
     setShowForm(true);
   };
 
   const handleCreate = () => {
-    setFormData({ name: '', email: '', password: '', role: '' });
+    setFormData({ name: '', email: '', role: '' });
     setShowForm(true);
   };
 
@@ -96,7 +96,7 @@ const UsersTable = () => {
       const payload = {
         name: formData.name,
         email: formData.email,
-        password: formData.password,
+        
         role: formData.role,
       };
 
