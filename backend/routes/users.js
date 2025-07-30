@@ -11,12 +11,15 @@ const router = express.Router();
 router.post("/create", async (req, res) => {
   try {
     const { name, email, role } = req.body;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-    if (!email.endsWith("@gmail.com")) {
+    if (!emailRegex.test(email)) {
       return res
         .status(400)
-        .json({ message: "Email must be a Gmail address (@gmail.com)" });
+        .json({ message: "Email must be a valid address" });
     }
+    
 
     let existingUser = await User.findOne({ email });
     if (existingUser)
@@ -99,8 +102,31 @@ router.get("/read/:projectId", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    const userId = req.params.id;
+
+    // Get the user before updating
+    const userToModify = await User.findById(userId);
+    if (!userToModify) return res.status(404).json({ message: "User not found." });
+
+    // Count active admins in the same project
+    const countAdmins = await User.countDocuments({
+      project: userToModify.project,
+      role: 'admin',
+      isActive: true,
+    });
+
+    const isLastAdmin = countAdmins === 1 && userToModify.role === 'admin' && userToModify.isActive === true;
+
+    const removingAdminRole = role && role !== 'admin';
+    // We don’t check for deactivation here, as it’s handled in a different route
+
+    if (isLastAdmin && removingAdminRole) {
+      return res.status(400).json({ message: "Cannot downgrade the last active admin." });
+    }
+
+    // Proceed with the update
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      userId,
       { name, email, password, role },
       { new: true }
     );
@@ -110,11 +136,31 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+
+
 router.put("/:id/activate", async (req, res) => {
   try {
     const { activate } = req.body;
+    const userId = req.params.id;
+
+    const userToModify = await User.findById(userId);
+    if (!userToModify) return res.status(404).json({ message: "User not found." });
+
+    const countAdmins = await User.countDocuments({
+      project: userToModify.project,
+      role: 'admin',
+      isActive: true,
+    });
+
+    const isLastAdmin = countAdmins === 1 && userToModify.role === 'admin' && userToModify.isActive === true;
+
+    // Prevent deactivation of the last active admin
+    if (isLastAdmin && activate === false) {
+      return res.status(400).json({ message: "Cannot deactivate the last active admin." });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      userId,
       { isActive: activate },
       { new: true }
     );
@@ -123,5 +169,7 @@ router.put("/:id/activate", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+
 
 export default router;

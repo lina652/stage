@@ -9,6 +9,8 @@ const UsersTable = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '',  role: '' });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     fetchUsers();
@@ -86,12 +88,15 @@ const UsersTable = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      if (!formData.email.endsWith('@gmail.com')) {
-         toast.error("Email must be a Gmail address (@gmail.com).");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+if (!emailRegex.test(formData.email)) {
+        toast.error("Email must be a valid address.");
         return;
       }
+      
 
       const payload = {
         name: formData.name,
@@ -117,6 +122,10 @@ const UsersTable = () => {
     } catch (err) {
       console.error('Submit error:', err);
       toast.error(err.response?.data?.message ||"Failed to submit User. Please try again.");
+    }
+
+    finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -188,7 +197,7 @@ const UsersTable = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="label">
-                    <span className="label-text font-bold">Name</span>
+                    <span className="label-text font-bold">Name<span className="text-red-500">*</span></span>
                   </label>
                   <input
                     type="text"
@@ -202,7 +211,7 @@ const UsersTable = () => {
 
                 <div>
                   <label className="label">
-                    <span className="label-text font-bold">Email</span>
+                    <span className="label-text font-bold">Email<span className="text-red-500">*</span></span>
                   </label>
                   <input
                     type="text"
@@ -216,7 +225,7 @@ const UsersTable = () => {
 
                 <div>
                   <label className="label">
-                    <span className="label-text font-bold">Role</span>
+                    <span className="label-text font-bold">Role<span className="text-red-500">*</span></span>
                   </label>
                   <select
                     className="select select-bordered w-full"
@@ -234,7 +243,8 @@ const UsersTable = () => {
                   <button type="button" onClick={() => setShowForm(false)} className="btn">
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button type="submit" className="btn btn-primary flex items-center gap-2" disabled={isSubmitting}>
+                    {isSubmitting && <span className="loading loading-spinner loading-sm" />}
                     {formData.id ? 'Update' : 'Create'}
                   </button>
                 </div>

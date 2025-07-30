@@ -75,13 +75,15 @@ const Tasks = () => {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="flex-1 p-6">
-        <h2 className="text-2xl font-bold mb-6">📝 My Tasks</h2>
-
-        {isLoading ? (
+      {isLoading ? (
           <div className="flex justify-center items-center min-h-[200px]">
             <LoadingSpinner />
           </div>
         ) : (
+          <>
+        <h2 className="text-2xl font-bold mb-6">📝 My Tasks</h2>
+
+  
           <div className="overflow-x-auto">
             <table className="table w-full">
               <thead className="bg-base-200">
@@ -149,8 +151,8 @@ const Tasks = () => {
               </tbody>
             </table>
           </div>
+          </>
         )}
-
         {showModal && (
           <TaskDetailsModal
             task={selectedTask}
@@ -158,7 +160,9 @@ const Tasks = () => {
             onCommentSubmit={handleCommentSubmit}
           />
         )}
+        
       </div>
+      
     </div>
   );
 };

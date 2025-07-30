@@ -33,8 +33,9 @@ const Sidebar = () => {
       </ul>
 
       {user?.role === 'admin' && (
-  <details className="group menu-dropdown mt-4 rounded-lg bg-base-100 shadow-md">
-    <summary className="flex items-center justify-between cursor-pointer px-4 py-2 text-base  hover:bg-base-300 rounded-t-lg">
+  <details className="group menu-dropdown  rounded-lg ">
+    <summary className="flex items-center justify-between cursor-pointer px-4 py-2 text-base  hover:bg-base-300 rounded-lg">
+      
       <span>🛠️ Administration</span>
       <svg
         className="w-4 h-4 ml-2 transform transition-transform duration-300 group-open:rotate-180"

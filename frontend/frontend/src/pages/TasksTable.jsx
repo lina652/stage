@@ -5,6 +5,8 @@ import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 import TaskDetailsModal from '../components/TaskDetailsModal';
 import toast, { Toaster } from 'react-hot-toast';
+import LoadingSpinner from '../components/LoadingSpinner';
+
 
 const TYPE_OPTIONS = ['Story Image', 'Animated Story', 'Post', 'Reel', 'Landscape Video', 'Cover Photo'];
 const STATUS_OPTIONS = ['To Do', 'In Progress', 'In Review', 'Approved', 'Rejected', 'Completed'];
@@ -19,7 +21,7 @@ const TasksTable = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [dueDateFilter, setDueDateFilter] = useState("");
@@ -108,7 +110,7 @@ const TasksTable = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setIsSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -147,6 +149,9 @@ const TasksTable = () => {
       console.error("Submit error:", err);
       toast.error(err.response?.data?.message || "Failed to submit task. Please try again.");
     }
+   finally {
+    setIsSubmitting(false);
+  }
   };
 
   const handleDelete = (taskId) => {
@@ -227,13 +232,7 @@ const TasksTable = () => {
     setShowModal(true);
   };
 
-  if (loading || isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    );
-  }
+
 
   const filteredTasks = tasks.filter((task) => {
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
@@ -247,6 +246,12 @@ const TasksTable = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <Sidebar role="user" />
       <div className="flex-1 p-6">
+      {isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">📋 Task Management</h1>
           <button className="btn btn-primary" onClick={handleCreate}>
@@ -260,6 +265,8 @@ const TasksTable = () => {
           </div>
           <div>
             <strong>Project ID:</strong> {project.id || projectId}
+            <label className="text-sm text-gray-600  mb-1 ml-40">Filter tasks by their due date.</label>
+
           </div>
         </div>
 
@@ -293,12 +300,19 @@ const TasksTable = () => {
             <option value="Cover Photo">Cover Photo</option>
           </select>
 
-          <input
-            type="date"
-            value={dueDateFilter}
-            onChange={(e) => setDueDateFilter(e.target.value)}
-            className="input input-bordered"
-          />
+          
+          
+          <div className="flex flex-col w-48">
+    <input
+      type="date"
+      value={dueDateFilter}
+      onChange={(e) => setDueDateFilter(e.target.value)}
+      className="input input-bordered"
+    />
+  </div>
+
+
+
         </div>
 
         <table className="table table-zebra w-full">
@@ -397,12 +411,14 @@ const TasksTable = () => {
         {/* Task create/edit form modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="bg-white p-6 rounded-lg w-full max-w-7xl max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">{formData._id ? 'Edit Task' : 'Create New Task'}</h2>
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
-                  <label className="label font-medium">Title</label>
+                <span className="label-text font-medium">
+                  Title <span className="text-red-500">*</span>
+                </span>
                   <input
                     type="text"
                     name="title"
@@ -414,8 +430,9 @@ const TasksTable = () => {
                 </div>
 
                 <div>
-                  <label className="label font-medium">Description</label>
-                  <textarea
+                <span className="label-text font-medium">
+                  Description
+                </span>                  <textarea
                     name="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -424,8 +441,10 @@ const TasksTable = () => {
                 </div>
 
                 <div>
-                  <label className="label font-medium">Type</label>
-                  <select
+                <span className="label-text font-medium">
+                  Type <span className="text-red-500">*</span>
+                </span>                  
+                <select
                     name="type"
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
@@ -442,8 +461,10 @@ const TasksTable = () => {
                 </div>
 
                 <div>
-                  <label className="label font-medium">Status</label>
-                  <select
+                <span className="label-text font-medium">
+                  Status <span className="text-red-500">*</span>
+                </span>                  
+                <select
                     name="status"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -460,7 +481,9 @@ const TasksTable = () => {
                 </div>
 
                 <div>
-                  <label className="label font-medium">Due Date</label>
+                <span className="label-text font-medium">
+                  Due Date <span className="text-red-500">*</span>
+                </span>
                   <input
                     type="date"
                     name="dueDate"
@@ -472,8 +495,9 @@ const TasksTable = () => {
                 </div>
 
                 <div>
-                  <label className="label font-medium">Assign Users</label>
-                  <div className="max-h-48 overflow-y-auto border rounded p-2">
+                <span className="label-text font-medium">
+                  Assign Users <span className="text-red-500">*</span>
+                </span>                  <div className="max-h-48 overflow-y-auto border rounded p-2">
                     {users.map((u) => (
                       <label key={u._id} className="flex items-center gap-2 mb-1 cursor-pointer">
                         <input
@@ -521,7 +545,9 @@ const TasksTable = () => {
                 {formData.isRecurring && (
                   <div className="col-span-2 pl-4 space-y-3 border-l-2 border-gray-300">
                     <div>
-                      <label className="label font-medium">Frequency</label>
+                    <span className="label-text font-medium">
+                         Frequency <span className="text-red-500">*</span>
+                    </span>
                       <select
                         value={formData.recurrence.frequency}
                         onChange={(e) =>
@@ -581,16 +607,18 @@ const TasksTable = () => {
                 )}
 
                 <div className="col-span-2 flex justify-end gap-2 pt-4">
-                  <button type="button" className="btn btn-outline" onClick={() => setShowForm(false)}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    {formData._id ? 'Update Task' : 'Create Task'}
-                  </button>
+                <button type="submit" className="btn btn-primary flex items-center gap-2">
+                  {isSubmitting && (
+                    <span className="loading loading-spinner loading-sm" />
+                  )}
+                  {formData._id ? 'Update Task' : 'Create Task'}
+                </button>
                 </div>
               </form>
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
