@@ -225,11 +225,11 @@ const ProjectsTable = () => {
                           Assign Users<span className="text-red-500">*</span>
                         </span>
                       </label>
-                      <div className="input input-bordered w-full text-white max-h-60 h-48 p-3 overflow-y-auto">
+                      <div className="form-control w-full max-h-60 h-48 p-3 overflow-y-auto bg-base-100 border border-base-300 rounded-md">
                         {users.map((user) => (
                           <label
                             key={user._id}
-                            className="flex items-center gap-2 py-1 px-2 cursor-pointer text-sm"
+                            className="flex items-center gap-2 py-1 px-2 cursor-pointer"
                           >
                             <input
                               type="checkbox"

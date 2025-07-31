@@ -129,7 +129,13 @@ router.put("/:id", async (req, res) => {
       userId,
       { name, email, password, role },
       { new: true }
-    );
+      );
+      await sendMail({
+        to: updatedUser.email,
+        subject: "Votre compte a été modifié",
+        text: `Bonjour ${updatedUser.name},\n\nVotre compte a été mis à jour par un administrateur.\n\nNouveaux détails :\n- Nom : ${updatedUser.name}\n- Email : ${updatedUser.email}\n- Rôle : ${updatedUser.role}\n\nMerci de vérifier que tout est correct.`,
+      });
+ 
     res.status(200).json(updatedUser);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -137,6 +143,20 @@ router.put("/:id", async (req, res) => {
 });
 
 
+router.get("/validate-reset-token/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "Lien invalide ou utilisateur introuvable" });
+    }
+
+    res.status(200).json({ message: "Lien valide" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 router.put("/:id/activate", async (req, res) => {
   try {

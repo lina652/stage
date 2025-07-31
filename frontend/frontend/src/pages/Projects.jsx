@@ -173,7 +173,7 @@ return (
                     <label className="label">
                       <span className="label-text font-medium">Assign Users<span className="text-red-500">*</span></span>
                     </label>
-                    <div className="input input-bordered w-full text-white max-h-60 h-48 p-3 overflow-y-auto">
+                    <div className="form-control w-full max-h-60 h-48 p-3 overflow-y-auto bg-base-100 border border-base-300 rounded-md">
                       {users
                         .filter((user) => user.isActive === true)
                         .map((user) => (
@@ -192,7 +192,7 @@ return (
                               }}
                             />
                             {user.name}{' '}
-                            <span className="text-gray-500 text-xs">({user.email})</span>
+                            <span className="text-gray-500 ">({user.email})</span>
                           </label>
                         ))}
                     </div>
